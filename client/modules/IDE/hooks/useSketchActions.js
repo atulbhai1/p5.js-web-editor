@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 import {
   autosaveProject,
+  cloneProject,
   exportProjectAsZip,
   newProject,
   saveProject,
   setProjectName
 } from '../actions/project';
+import { updateFileContent } from '../actions/files';
 import { showToast } from '../actions/toast';
 import { showErrorModal, showShareModal } from '../actions/ide';
 import { selectCanEditSketch } from '../selectors/users';
@@ -33,10 +35,23 @@ const useSketchActions = () => {
   }
 
   function saveSketch(cmController) {
-    if (authenticated) {
-      dispatch(saveProject(cmController?.getContent()));
-    } else {
+    if (!authenticated) {
       dispatch(showErrorModal('forceAuthentication'));
+      return;
+    }
+    if (canEditProjectName) {
+      dispatch(saveProject(cmController?.getContent()));
+      return;
+    }
+    // Signed-in user who doesn't own this sketch: offer to save a copy.
+    if (window.confirm(t('Nav.File.SaveAsCopyConfirm'))) {
+      // The editor syncs to redux with a debounce, so push the live content
+      // before cloning so the copy includes the latest keystrokes.
+      const file = cmController?.getContent();
+      if (file) {
+        dispatch(updateFileContent(file.id, file.content));
+      }
+      dispatch(cloneProject());
     }
   }
 
