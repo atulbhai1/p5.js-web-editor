@@ -46,7 +46,7 @@ describe('<SaveAsCopyModal />', () => {
   it('closes without cloning from the exit button', () => {
     const { types } = setup();
     fireEvent.click(
-      screen.getByRole('button', { name: 'Close save a copy dialog' })
+      screen.getByRole('button', { name: 'Close Save a copy? overlay' })
     );
     expect(cloneProject).not.toHaveBeenCalled();
     expect(types()).toEqual(['CLOSE_SAVE_AS_COPY_MODAL']);
