@@ -24,11 +24,9 @@ const SaveAsCopyModal = () => {
     >
       <p>{t('Nav.File.SaveAsCopyConfirm')}</p>
       <div className="modal__actions">
-        <Button kind={ButtonKinds.SECONDARY} onClick={handleClose}>
-          {t('Nav.File.SaveAsCopyCancel')}
-        </Button>
+        <Button onClick={handleClose}>{t('Nav.File.SaveAsCopyCancel')}</Button>
         {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-        <Button onClick={handleConfirm} autoFocus>
+        <Button kind={ButtonKinds.SECONDARY} onClick={handleConfirm} autoFocus>
           {t('Nav.File.SaveAsCopyButton')}
         </Button>
       </div>
