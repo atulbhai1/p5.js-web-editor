@@ -4,7 +4,7 @@ import { setupStore } from '../../../store';
 import useSketchActions from './useSketchActions';
 import { updateFileContent } from '../actions/files';
 import { saveProject, cloneProject } from '../actions/project';
-import { showErrorModal } from '../actions/ide';
+import { openSaveAsCopyModal, showErrorModal } from '../actions/ide';
 
 jest.mock('../actions/project', () => ({
   ...jest.requireActual('../actions/project'),
@@ -49,7 +49,6 @@ describe('useSketchActions saveSketch', () => {
   afterEach(() => confirmSpy.mockRestore());
 
   it('saves directly when the user owns the sketch', () => {
-    confirmSpy.mockReturnValue(true);
     const { types } = setup({ owner: { id: 'me' } });
     actions.saveSketch(cmController);
     expect(confirmSpy).not.toHaveBeenCalled();
@@ -65,25 +64,14 @@ describe('useSketchActions saveSketch', () => {
     expect(types()).toContain('TEST_SAVE');
   });
 
-  it('syncs live content then clones when non-owner confirms', () => {
-    confirmSpy.mockReturnValue(true);
+  it('syncs live content then opens the modal for a non-owner', () => {
     const { types } = setup({ owner: { id: 'someone-else' } });
     actions.saveSketch(cmController);
-    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(updateFileContent).toHaveBeenCalledWith('file1', 'live code');
-    expect(cloneProject).toHaveBeenCalled();
-    expect(saveProject).not.toHaveBeenCalled();
-    expect(types()).toEqual(['TEST_UPDATE_FILE', 'TEST_CLONE']);
-  });
-
-  it('does nothing when non-owner cancels', () => {
-    confirmSpy.mockReturnValue(false);
-    const { types } = setup({ owner: { id: 'someone-else' } });
-    actions.saveSketch(cmController);
-    expect(saveProject).not.toHaveBeenCalled();
     expect(cloneProject).not.toHaveBeenCalled();
-    expect(updateFileContent).not.toHaveBeenCalled();
-    expect(types()).toEqual([]);
+    expect(saveProject).not.toHaveBeenCalled();
+    expect(types()).toEqual(['TEST_UPDATE_FILE', openSaveAsCopyModal().type]);
   });
 
   it('shows the auth modal when unauthenticated', () => {
